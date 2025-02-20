@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>Weather App</title>
+    <!-- <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon-iphone60x60.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="images/apple-touchicon-ipad-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touchicon-iphone-retina-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="images/apple-touchicon-ipad-retina-152x152.png"> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></head>
+
+    <style>
+        .bg-main {
+            background-color: #1A8184;
+        }
+        .bg-second {
+            background-color: #82c5c7;
+        }
+        .bg-third {
+            background-color: #D1E6E6;
+        }
+        .bi {
+            font-size: 40px;
+        }
+    </style>
+
+<body class="bg-dark">
+    <div class="d-flex min-vh-100 justify-content-center align-items-center">
+        <form class="card bg-main col-12 col-sm-10 col-md-8 col-lg-6" id="frmWidget">
+            <div class="card-body text-center p-4">
+                <div class="row">
+                    <!-- left side -->
+                    <div class="col card bg-second ms-3 me-3">
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <h6 id="txtLocation">Cookeville, TN</h6>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <h6 id="txtTemp"></h6>
+                                </div>
+                                <div class="col">
+                                    <i class="bi bi-cloud-fill"></i>
+                                    <h6 id="txtConditions"></h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- right side -->
+                    <div class="col me-3">
+                        <!-- top card -->
+                        <div class="row">
+                            <div class="card bg-second mb-3">
+                                <div class="row card-body">
+                                    <div class="col">
+                                        <h6>High</h6>
+                                        <h6 id="txtHighTemp"></h6>
+                                    </div>
+                                    <div class="col">
+                                        <h6>Low</h6>
+                                        <h6 id="txtLowTemp"></h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- bottom card -->
+                        <div class="row card bg-second">
+                            <div class="card-body">
+                                <h6 id="txtHumidity">Humidity: </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script>
+        const strBaseUrl = "https://api.open-meteo.com/v1/forecast?latitude=36.1565&longitude=-85.501&current=temperature_2m,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=1"
+
+        // function getUrl(latitude, longitude) {
+        //     return `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=1`
+        // }
+
+        // async function getCoords() {
+        //     await navigator.geolocation.getCurrentPosition(function(location) {
+        //         if (location.coords) {
+        //             // update with real coords
+        //             fltLatitude = location.coords.latitude
+        //             fltLongitude = location.coords.longitude
+        //             return {latitude: fltLatitude, longitude: fltLongitude}
+        //         } else {
+        //             // default set to Cookeville
+        //             fltLatitude = 36.1565
+        //             fltLongitude = -85.501
+        //             return {latitude: fltLatitude, longitude: fltLongitude}
+        //         }
+        //     })
+        // }
+
+        // const objCoords = getCoords()
+        // console.log(objCoords)
+        // const strBaseUrl = getUrl(objCoords.latitude, objCoords.longitdue)
+        // console.log(strBaseUrl)
+
+        async function getWeatherData() {
+            try {
+                const objResponse = await fetch(strBaseUrl)
+
+                if (!objResponse.ok) {
+                    throw new Error('HTTP Error Status', objResponse.status)
+                } 
+
+                // get all necessary data
+                const objData = await objResponse.json()
+                const objCurrent = objData.current
+                const objDaily = objData.daily
+                
+                const strTempUnit = objData.current_units.temperature_2m
+                const fltCurrTemp = objCurrent.temperature_2m
+                const intCurrHumidity = objCurrent.relative_humidity_2m
+                const intCurrWeather = objCurrent.weather_code
+                const fltDailyTempMax = objDaily.temperature_2m_max
+                const fltDailyTempMin = objDaily.temperature_2m_min
+
+                // get specific icons based on data
+                
+
+                // input all data into the html
+                document.querySelector('#txtTemp').innerHTML = fltCurrTemp + strTempUnit
+                document.querySelector('#txtHumidity').innerHTML += intCurrHumidity + "%"
+                document.querySelector('#txtConditions').innerHTML = intCurrWeather
+                document.querySelector('#txtHighTemp').innerHTML = fltDailyTempMax + strTempUnit
+                document.querySelector('#txtLowTemp').innerHTML = fltDailyTempMin + strTempUnit
+
+            } catch (objError) {
+                console.log('Error fetching weather data', objData)
+            }
+        }
+
+        // getWeatherData()
+
+    </script>
+</body>
+</html>
