@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,54 +13,69 @@
     <link rel="apple-touch-icon" sizes="60x60" href="images/apple-touchicon-ipad-76x76.png">
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touchicon-iphone-retina-120x120.png">
     <link rel="apple-touch-icon" sizes="144x144" href="images/apple-touchicon-ipad-retina-152x152.png"> -->
-    
+
     <!-- bootstrap and boostrap icons css cdns -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
 
-    <!-- custom css -->
-    <style>
-        .bg-main {
-            background-color: #1A8184;
-        }
-        .bg-second {
-            background-color: #82c5c7;
-        }
-        .inner-card {
-            border-radius: 40px;
-        }
-        .bi {
-            font-size: 40px;
-        }
-    </style>
+<!-- custom css -->
+<style>
+    .bg-day {
+        background-image: linear-gradient(#32699F, #7cb1e7);
+    }
 
-<body class="bg-dark">
+    .bg-night {
+        background-image: linear-gradient(#00022A, #354064);
+    }
+
+    .card {
+        border-radius: 32px;
+    }
+
+    /* fix color scheme, add night/day colors? */
+    #frmWidget {
+        background-color: #B2DFFB;
+    }
+
+    .inner-card {
+        background-color: #D3F4FF;
+        border-radius: 40px;
+    }
+
+    .bi {
+        font-size: 40px;
+    }
+</style>
+
+<body>
     <div class="d-flex min-vh-100 justify-content-center align-items-center">
-        <form class="card bg-main col-12 col-sm-10 col-md-8 col-lg-6" id="frmWidget">
+        <form class="card col-12 col-sm-10 col-md-8 col-lg-5" id="frmWidget">
             <div class="card-body text-center p-4">
                 <div class="row">
                     <!-- left side -->
-                    <div class="col card bg-second inner-card ms-3 me-3">
+                    <div class="col card inner-card ms-2 me-3">
                         <div class="card-body">
-                            <div class="row mb-3">
+                            <div class="row mt-2 mb-3">
                                 <h6 id="txtLocation"></h6>
                             </div>
-                            <div class="row mb-2">
+                            <div class="row align-items-center mb-2">
                                 <div class="col">
                                     <h4 id="txtTemp"></h4>
                                 </div>
                                 <div class="col">
-                                    <i class="bi bi-cloud-fill"></i>
-                                    <h6 id="txtConditions">Overcast</h6>
+                                    <i id="iconCondition"></i>
+                                    <h6 id="txtCondition"></h6>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <!-- right side -->
-                    <div class="col me-3">
+                    <div class="col me-2">
                         <!-- top card -->
-                        <div class="row">
-                            <div class="card bg-second inner-card mb-3">
+                        <div class="row d-flex justify-content-center align-items-center">
+                            <div class="card inner-card mb-3">
                                 <div class="row card-body">
                                     <div class="col">
                                         <h6>High</h6>
@@ -73,9 +89,11 @@
                             </div>
                         </div>
                         <!-- bottom card -->
-                        <div class="row card bg-second inner-card">
-                            <div class="col card-body">
-                                <h6 id="txtHumidity">Humidity: </h6>
+                        <div class="row d-flex justify-content-center align-items-center">
+                            <div class="card inner-card">
+                                <div class="col card-body">
+                                    <h6 id="txtHumidity">Humidity: </h6>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -83,18 +101,19 @@
             </div>
         </form>
     </div>
+    <!-- footer to acknowledge the api -->
 
     <!-- bootstrap and swwet alert cdns -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <!-- vanilla js -->
     <script>
         // get user's location
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(location) {
+            navigator.geolocation.getCurrentPosition(function (location) {
                 getWeatherData(location.coords.latitude, location.coords.longitude)
-            }, function(error) {
+            }, function (error) {
                 // alert user to enable location sharing if denied
                 if (error.code === error.PERMISSION_DENIED) {
                     Swal.fire({
@@ -114,9 +133,9 @@
 
         async function getWeatherData(latitude, longitude) {
             try {
-                const strWeatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=1`
+                const strWeatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,is_day,weather_code&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=1`
                 const strGeocodingApiUrl = `https://nominatim.openstreetmap.org/reverse.php?lat=${latitude}&lon=${longitude}&zoom=10&format=json`
-                
+
                 const objWeatherResponse = await fetch(strWeatherApiUrl)
                 const objGeocodeResponse = await fetch(strGeocodingApiUrl)
 
@@ -126,36 +145,182 @@
                 if (!objGeocodeResponse.ok) {
                     throw new Error('Geocoding API HTTP Error Status', objGeocodeResponse.status)
                 }
-                
+
                 // get all necessary data
                 const objWeatherData = await objWeatherResponse.json()
                 const objGeocodeData = await objGeocodeResponse.json()
                 const objCurrent = objWeatherData.current
                 const objDaily = objWeatherData.daily
-                
+
                 const strCity = objGeocodeData.name
                 const strState = getStateAbbr(objGeocodeData.address.state)
+
                 const strTempUnit = objWeatherData.current_units.temperature_2m
+                const boolIsDay = objCurrent.is_day
                 const fltCurrTemp = objCurrent.temperature_2m
                 const intCurrHumidity = objCurrent.relative_humidity_2m
-                const intCurrWeather = objCurrent.weather_code
+                const intCurrWeatherCode = objCurrent.weather_code
                 const fltDailyTempMax = objDaily.temperature_2m_max
                 const fltDailyTempMin = objDaily.temperature_2m_min
-                
+
                 // get specific icons based on data
-                
-                
+                const objCondition = getConditionAndIcon(intCurrWeatherCode, boolIsDay)
+
+                if (boolIsDay) {
+                    document.querySelector('body').className = "bg-day"
+                } else {
+                    document.querySelector('body').className = "bg-night"
+                }
+
                 // input all data into the html
                 document.querySelector('#txtLocation').innerHTML = strCity + ", " + strState
                 document.querySelector('#txtTemp').innerHTML = fltCurrTemp + strTempUnit
-                document.querySelector('#txtConditions').innerHTML = intCurrWeather
+                document.querySelector('#iconCondition').className = objCondition.icon
+                document.querySelector('#txtCondition').innerHTML = objCondition.condition
                 document.querySelector('#txtHighTemp').innerHTML = fltDailyTempMax + strTempUnit
                 document.querySelector('#txtLowTemp').innerHTML = fltDailyTempMin + strTempUnit
                 document.querySelector('#txtHumidity').innerHTML += intCurrHumidity + "%"
-                
+
             } catch (objError) {
                 console.log('Error fetching data:', objError)
             }
+        }
+
+        function getConditionAndIcon(weatherCode, isDay) {
+            let condition = ""
+            let icon = ""
+            switch (weatherCode) {
+                case 0:
+                    if (isDay) {
+                        condition = "Sunny"
+                        icon = "bi bi-sun"
+                    } else {
+                        condition = "Clear"
+                        icon = "bi bi-moon-stars"
+                    }
+                    break
+                case 1:
+                    if (isDay) {
+                        condition = "Mostly Sunny"
+                        icon = "bi bi-sun"
+                    } else {
+                        condition = "Mostly Clear"
+                        icon = "bi bi-moon"
+                    }
+                    break
+                case 2:
+                    if (isDay) {
+                        condition = "Partly Cloudy"
+                        icon = "bi bi-cloud-sun"
+                    } else {
+                        condition = "Partly Cloudy"
+                        icon = "bi bi-cloud-moon"
+                    }
+                    break
+                case 3:
+                    condition = "Overcast"
+                    icon = "bi bi-cloudy"
+                    break
+                case 45:
+                    condition = "Fog"
+                    icon = "bi bi-cloud-fog2"
+                    break
+                case 48:
+                    condition = "Rime Fog"
+                    icon = "bi bi-cloud-fog2"
+                    break
+                case 51:
+                    condition = "Light Drizzle"
+                    icon = "bi bi-cloud-drizzle"
+                    break
+                case 53:
+                    condition = "Drizzle"
+                    icon = "bi bi-cloud-drizzle"
+                    break
+                case 55:
+                    condition = "Heavy Drizzle"
+                    icon = "bi bi-cloud-drizzle"
+                    break
+                case 56:
+                    condition = "Light Freezing Drizzle"
+                    icon = "bi bi-cloud-drizzle"
+                    break
+                case 57:
+                    condition = "Heavy Freezing Drizzle"
+                    icon = "bi bi-cloud-drizzle"
+                    break
+                case 61:
+                    condition = "Light Rain"
+                    icon = "bi bi-cloud-rain"
+                    break
+                case 63:
+                    condition = "Rain"
+                    icon = "bi bi-cloud-rain"
+                    break
+                case 65:
+                    condition = "Heavy Rain"
+                    icon = "bi bi-cloud-rain-heavy"
+                    break
+                case 66:
+                    condition = "Light Freezing Rain"
+                    icon = "bi bi-cloud-sleet"
+                    break
+                case 67:
+                    condition = "Heavy Freezing Rain"
+                    icon = "bi bi-cloud-sleet"
+                    break
+                case 71:
+                    condition = "Light Snowfall"
+                    icon = "bi bi-cloud-snow"
+                    break
+                case 73:
+                    condition = "Snow"
+                    icon = "bi bi-cloud-snow"
+                    break
+                case 75:
+                    condition = "Heavy Snow"
+                    icon = "bi bi-cloud-snow"
+                    break
+                case 77:
+                    condition = "Snow Grains"
+                    icon = "bi bi-cloud-snow"
+                    break
+                case 80:
+                    condition = "Light Rain Shower"
+                    icon = "bi bi-cloud-rain"
+                    break
+                case 81:
+                    condition = "Rain Shower"
+                    icon = "bi bi-cloud-rain"
+                    break
+                case 82:
+                    condition = "Heavy Rain Shower"
+                    icon = "bi bi-cloud-rain-heavy"
+                    break
+                case 85:
+                    condition = "Light Snow Shower"
+                    icon = "bi bi-cloud-snow"
+                    break
+                case 86:
+                    condition = "Heavy Snow Shower"
+                    icon = "bi bi-cloud-snow"
+                    break
+                case 95:
+                    condition = "Thunderstorm"
+                    icon = "bi bi-cloud-lightning-rain"
+                    break
+                case 96:
+                    condition = "Light Hail Thunderstorm"
+                    icon = "bi bi-cloud-lightning-rain"
+                    break
+                case 99:
+                    condition = "Heavy Hail Thunderstorm"
+                    icon = "bi bi-cloud-lightning-rain"
+                    break
+                default:
+                    condition = "Unknown"
+            }
+            return {"condition": condition, "icon": icon}
         }
 
         function getStateAbbr(state) {
@@ -217,4 +382,5 @@
         }
     </script>
 </body>
+
 </html>
