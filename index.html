@@ -27,7 +27,7 @@
     }
 
     .bg-night {
-        background-image: linear-gradient(#00022A, #354064);
+        background-image: linear-gradient(#00022A, #4e5872);
     }
 
     .card {
@@ -49,7 +49,7 @@
     }
 </style>
 
-<body>
+<body class="bg-day">
     <div class="d-flex min-vh-100 justify-content-center align-items-center">
         <form class="card col-12 col-sm-10 col-md-8 col-lg-5" id="frmWidget">
             <div class="card-body text-center p-4">
@@ -58,15 +58,16 @@
                     <div class="col card inner-card ms-2 me-3">
                         <div class="card-body">
                             <div class="row mt-2 mb-3">
-                                <h6 id="txtLocation"></h6>
+                                <h5 id="txtLocation"></h5>
                             </div>
-                            <div class="row align-items-center mb-2">
+                            <div class="row align-items-around mb-2">
                                 <div class="col">
-                                    <h4 id="txtTemp"></h4>
+                                    <i id="iconTemp"></i>
+                                    <h5 id="txtTemp"></h5>
                                 </div>
                                 <div class="col">
                                     <i id="iconCondition"></i>
-                                    <h6 id="txtCondition"></h6>
+                                    <h5 id="txtCondition"></h5>
                                 </div>
                             </div>
                         </div>
@@ -89,10 +90,11 @@
                             </div>
                         </div>
                         <!-- bottom card -->
-                        <div class="row d-flex justify-content-center align-items-center">
+                        <div class="row d-flex justify-content-center align-items-around">
                             <div class="card inner-card">
                                 <div class="col card-body">
-                                    <h6 id="txtHumidity">Humidity: </h6>
+                                    <h6>Humidity</h6>
+                                    <h5 id="txtHumidity"></h5>
                                 </div>
                             </div>
                         </div>
@@ -114,6 +116,9 @@
             navigator.geolocation.getCurrentPosition(function (location) {
                 getWeatherData(location.coords.latitude, location.coords.longitude)
             }, function (error) {
+
+                // future: if no location, default to using device IP???
+
                 // alert user to enable location sharing if denied
                 if (error.code === error.PERMISSION_DENIED) {
                     Swal.fire({
@@ -131,11 +136,15 @@
             })
         }
 
+        // future: possibly separate function into getdata() and then populateData()
+
         async function getWeatherData(latitude, longitude) {
             try {
+                // api urls
                 const strWeatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,is_day,weather_code&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=1`
                 const strGeocodingApiUrl = `https://nominatim.openstreetmap.org/reverse.php?lat=${latitude}&lon=${longitude}&zoom=10&format=json`
 
+                // call apis
                 const objWeatherResponse = await fetch(strWeatherApiUrl)
                 const objGeocodeResponse = await fetch(strGeocodingApiUrl)
 
@@ -152,10 +161,16 @@
                 const objCurrent = objWeatherData.current
                 const objDaily = objWeatherData.daily
 
+                // get city and state
                 const strCity = objGeocodeData.name
-                const strState = getStateAbbr(objGeocodeData.address.state)
+                let strState = objGeocodeData.address.state
+                // get state abbreviation if in the US
+                if (objGeocodeData.address.country === "United States") {
+                    strState = getStateAbbr(strState)
+                }
 
                 const strTempUnit = objWeatherData.current_units.temperature_2m
+                const strHumidityUnit = objWeatherData.current_units.relative_humidity_2m
                 const boolIsDay = objCurrent.is_day
                 const fltCurrTemp = objCurrent.temperature_2m
                 const intCurrHumidity = objCurrent.relative_humidity_2m
@@ -164,8 +179,10 @@
                 const fltDailyTempMin = objDaily.temperature_2m_min
 
                 // get specific icons based on data
-                const objCondition = getConditionAndIcon(intCurrWeatherCode, boolIsDay)
+                const objConditions = getConditionAndIcon(intCurrWeatherCode, boolIsDay)
+                const strTempIcon = getTempIcon(fltCurrTemp)
 
+                // change bg colors based on day/night
                 if (boolIsDay) {
                     document.querySelector('body').className = "bg-day"
                 } else {
@@ -174,16 +191,32 @@
 
                 // input all data into the html
                 document.querySelector('#txtLocation').innerHTML = strCity + ", " + strState
+                document.querySelector('#iconTemp').className = strTempIcon
                 document.querySelector('#txtTemp').innerHTML = fltCurrTemp + strTempUnit
-                document.querySelector('#iconCondition').className = objCondition.icon
-                document.querySelector('#txtCondition').innerHTML = objCondition.condition
+                document.querySelector('#iconCondition').className = objConditions.icon
+                document.querySelector('#txtCondition').innerHTML = objConditions.condition
                 document.querySelector('#txtHighTemp').innerHTML = fltDailyTempMax + strTempUnit
                 document.querySelector('#txtLowTemp').innerHTML = fltDailyTempMin + strTempUnit
-                document.querySelector('#txtHumidity').innerHTML += intCurrHumidity + "%"
+                document.querySelector('#txtHumidity').innerHTML += intCurrHumidity + strHumidityUnit
 
             } catch (objError) {
                 console.log('Error fetching data:', objError)
             }
+        }
+
+        function getTempIcon(temp) {
+            let icon = ""
+            if (temp > 80) {
+                icon = "bi bi-thermometer"
+            } else if (temp > 60) {
+                icon = "bi bi-thermometer-half"
+            } else if (temp > 30) {
+                icon = "bi bi-thermometer-low"
+            } else {
+                icon = "bi bi-thermometer"
+            }
+
+            return icon
         }
 
         function getConditionAndIcon(weatherCode, isDay) {
