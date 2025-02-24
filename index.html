@@ -61,16 +61,16 @@
                     <div class="col card inner-card ms-2 me-3">
                         <div class="card-body">
                             <div class="row mt-2 mb-3">
-                                <h5 id="txtLocation">Cookeville, TN</h5>
+                                <h5 id="txtLocation"></h5>
                             </div>
                             <div class="row align-items-around mb-2">
                                 <div class="col">
-                                    <i id="iconTemp" class="bi bi-thermometer-low"></i>
-                                    <h5 id="txtTemp">35.7°F</h5>
+                                    <i id="iconTemp"></i>
+                                    <h5 id="txtTemp"></h5>
                                 </div>
                                 <div class="col">
-                                    <i id="iconCondition" class="bi bi-cloudy"></i>
-                                    <h5 id="txtCondition">Overcast</h5>
+                                    <i id="iconCondition"></i>
+                                    <h5 id="txtCondition"></h5>
                                 </div>
                             </div>
                         </div>
@@ -83,11 +83,11 @@
                                 <div class="row card-body">
                                     <div class="col">
                                         <h6>High</h6>
-                                        <h5 id="txtHighTemp">49.1°F</h5>
+                                        <h5 id="txtHighTemp"></h5>
                                     </div>
                                     <div class="col">
                                         <h6>Low</h6>
-                                        <h5 id="txtLowTemp">19.9°F</h5>
+                                        <h5 id="txtLowTemp"></h5>
                                     </div>
                                 </div>
                             </div>
@@ -97,7 +97,7 @@
                             <div class="card inner-card">
                                 <div class="col card-body">
                                     <h6>Humidity</h6>
-                                    <h5 id="txtHumidity">38%</h5>
+                                    <h5 id="txtHumidity"></h5>
                                 </div>
                             </div>
                         </div>
@@ -115,29 +115,29 @@
     <!-- vanilla js -->
     <script>
         // get user's location
-        // if (navigator.geolocation) {
-        //     navigator.geolocation.getCurrentPosition(function (location) {
-        //         getWeatherData(location.coords.latitude, location.coords.longitude)
-        //     }, function (error) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (location) {
+                getWeatherData(location.coords.latitude, location.coords.longitude)
+            }, function (error) {
 
-        //         // future: if no location, default to using device IP???
+                // future: if no location, default to using device IP???
 
-        //         // alert user to enable location sharing if denied
-        //         if (error.code === error.PERMISSION_DENIED) {
-        //             Swal.fire({
-        //                 title: "Don't know where you are, silly!",
-        //                 text: "Please enable location sharing in your settings!",
-        //                 icon: 'error'
-        //             })
-        //         } else {
-        //             Swal.fire({
-        //                 title: "Oh no, an error occurred!",
-        //                 text: "There was an issue getting your location",
-        //                 icon: 'error'
-        //             })
-        //         }
-        //     })
-        // }
+                // alert user to enable location sharing if denied
+                if (error.code === error.PERMISSION_DENIED) {
+                    Swal.fire({
+                        title: "Don't know where you are, silly!",
+                        text: "Please enable location sharing in your settings!",
+                        icon: 'error'
+                    })
+                } else {
+                    Swal.fire({
+                        title: "Oh no, an error occurred!",
+                        text: "There was an issue getting your location",
+                        icon: 'error'
+                    })
+                }
+            })
+        }
 
         // future: possibly separate function into getdata() and then populateData()
 
