@@ -46,39 +46,39 @@
 <body class="bg-day">
     <div class="d-flex min-vh-100 justify-content-center align-items-center">
         <form class="card col-12 col-sm-10 col-md-8 col-lg-5" id="frmWidget">
-            <div class="card-body text-center p-4">
-                <div class="row">
+            <div class="card-body text-center">
+                <div class="row g-3">
                     <!-- left side -->
-                    <div class="col-sm card inner-card ms-2 me-3">
+                    <div class="col-sm card inner-card">
                         <div class="card-body">
-                            <div class="row mt-2 mb-3">
-                                <h5 id="txtLocation"></h5>
+                            <div class="row">
+                                <h5 id="txtLocation">Cookeville, TN</h5>
                             </div>
-                            <div class="row align-items-around mb-2">
+                            <div class="row align-items-around">
                                 <div class="col">
-                                    <i id="iconTemp"></i>
-                                    <h5 id="txtTemp"></h5>
+                                    <i id="iconTemp" class="bi bi-thermometer-low"></i>
+                                    <h5 id="txtTemp">34.1°F</h5>
                                 </div>
                                 <div class="col">
-                                    <i id="iconCondition"></i>
-                                    <h5 id="txtCondition"></h5>
+                                    <i id="iconCondition" class="bi bi-cloudy"></i>
+                                    <h5 id="txtCondition">Overcast</h5>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <!-- right side -->
-                    <div class="col-sm me-2">
+                    <div class="col-sm">
                         <!-- top card -->
                         <div class="row d-flex justify-content-center align-items-center">
-                            <div class="card inner-card mb-3">
+                            <div class="card inner-card">
                                 <div class="row card-body">
                                     <div class="col">
                                         <h6>High</h6>
-                                        <h5 id="txtHighTemp"></h5>
+                                        <h5 id="txtHighTemp">49°F</h5>
                                     </div>
                                     <div class="col">
                                         <h6>Low</h6>
-                                        <h5 id="txtLowTemp"></h5>
+                                        <h5 id="txtLowTemp">19.8°F</h5>
                                     </div>
                                 </div>
                             </div>
@@ -88,7 +88,7 @@
                             <div class="card inner-card">
                                 <div class="col card-body">
                                     <h6>Humidity</h6>
-                                    <h5 id="txtHumidity"></h5>
+                                    <h5 id="txtHumidity">40%</h5>
                                 </div>
                             </div>
                         </div>
@@ -106,29 +106,29 @@
     <!-- vanilla js -->
     <script>
         // get user's location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (location) {
-                getWeatherData(location.coords.latitude, location.coords.longitude)
-            }, function (error) {
+        // if (navigator.geolocation) {
+        //     navigator.geolocation.getCurrentPosition(function (location) {
+        //         getWeatherData(location.coords.latitude, location.coords.longitude)
+        //     }, function (error) {
 
-                // future: if no location, default to using device IP???
+        //         // future: if no location, default to using device IP???
 
-                // alert user to enable location sharing if denied
-                if (error.code === error.PERMISSION_DENIED) {
-                    Swal.fire({
-                        title: "Don't know where you are, silly!",
-                        text: "Please enable location sharing in your settings!",
-                        icon: 'error'
-                    })
-                } else {
-                    Swal.fire({
-                        title: "Oh no, an error occurred!",
-                        text: "There was an issue getting your location",
-                        icon: 'error'
-                    })
-                }
-            })
-        }
+        //         // alert user to enable location sharing if denied
+        //         if (error.code === error.PERMISSION_DENIED) {
+        //             Swal.fire({
+        //                 title: "Don't know where you are, silly!",
+        //                 text: "Please enable location sharing in your settings!",
+        //                 icon: 'error'
+        //             })
+        //         } else {
+        //             Swal.fire({
+        //                 title: "Oh no, an error occurred!",
+        //                 text: "There was an issue getting your location",
+        //                 icon: 'error'
+        //             })
+        //         }
+        //     })
+        // }
 
         // future: possibly separate function into getdata() and then populateData()
 
