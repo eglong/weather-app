@@ -10,8 +10,7 @@
     <title>Weather App</title>
 
     <!-- bootstrap and boostrap icons css cdns -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
@@ -55,13 +54,13 @@
 
 <body class="bg-day">
     <div class="d-flex min-vh-100 justify-content-center align-items-center">
-        <div class="card main-card col-10 col-sm-10 col-md-6 col-lg-4">
+        <div class="card main-card col-10 col-sm-8 col-md-6 col-lg-4">
             <div class="card-body text-center p-3 mt-2">
                 <!-- top card -->
                 <div class="card inner-card mb-2">
                     <div class="card-body">
                         <div class="row">
-                            <h6 id="txtLocation"></h6>
+                            <h5 id="txtLocation"></h5>
                         </div>
                         <div class="row align-items-around">
                             <div class="col">
@@ -93,22 +92,22 @@
                 <!-- apex charts -->
                 <div class="card inner-card">
                     <div class="card-body">
-                        <select class="form-select selector mb-1" id="selChartType" aria-label="Select a chart">
+                        <select name="chartType" class="form-select selector mb-1" id="selChartType" aria-label="Select a chart">
                             <option value="temperature">Temperature</option>
                             <option value="humidity">Humidity</option>
                             <option value="precipitation">Precipitation</option>
                             <option value="wind">Wind</option>
                         </select>
-                        <div id="chart"></div>
+                        <div id="chart" aria-label="Chart for temperature, humidity, precipitation, and wind speeds"></div>
                     </div>
                 </div>
+                <!-- acknowledge open-meteo -->
                 <p class="mt-3 mb-1">Made with <a href="https://open-meteo.com/en/docs">Open-Meteo API</a></p>
             </div>
         </div>
     </div>
-    <!-- footer to acknowledge the api -->
 
-    <!-- bootstrap and swwet alert cdns -->
+    <!-- bootstrap, wwet alert, and apex charts cdns -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -118,41 +117,33 @@
         // get user's location
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function (location) {
+                // call function to populate app with data
                 populateHTML(location.coords.latitude, location.coords.longitude)
             }, function (error) {
+                strError = ''
 
-                // future: if no location, default to using device IP???
-
-                // alert user to enable location sharing if denied
+                // alert user to enable location sharing if denied or other error
                 if (error.code === error.PERMISSION_DENIED) {
-                    Swal.fire({
-                        title: "Don't know where you are, silly!",
-                        text: "Please enable location sharing in your settings!",
-                        icon: 'error'
-                    })
+                    strError = 'Please enable location sharing in your settings!'
                 } else {
-                    Swal.fire({
-                        title: "Oh no, an error occurred!",
-                        text: "There was an issue getting your location",
-                        icon: 'error'
-                    })
+                    strError = 'There was an issue getting your location!'
                 }
+
+                Swal.fire({
+                    title: strError,
+                    icon: 'error'
+                })
             })
         }
 
         // function that populates data into the html
-        async function populateHTML(latitude, longitude) {
-            let strWeatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,is_day,precipitation,weather_code&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=1`
-            let strGeocodingApiUrl = `https://nominatim.openstreetmap.org/reverse.php?lat=${latitude}&lon=${longitude}&zoom=10&format=json`
+        async function populateHTML(fltLatitude, fltLongitude) {
 
-            // make api calls
+            // call function to get data from api
+            let strWeatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${fltLatitude}&longitude=${fltLongitude}&current=temperature_2m,relative_humidity_2m,is_day,precipitation,weather_code&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=1`
+            let strGeocodingApiUrl = `https://nominatim.openstreetmap.org/reverse.php?lat=${fltLatitude}&lon=${fltLongitude}&zoom=10&format=json`
             const objWeatherData = await getData(strWeatherApiUrl)
             const objGeocodeData = await getData(strGeocodingApiUrl)
-
-            // get all necessary data
-            const objCurrent = objWeatherData.current
-            const objDaily = objWeatherData.daily
-            const objHourly = objWeatherData.hourly
 
             // get city and state
             const strCity = objGeocodeData.name
@@ -162,21 +153,23 @@
                 strState = getStateAbbr(strState)
             }
 
+            // get all necessary data
+            const objHourly = objWeatherData.hourly
             const strTempUnit = objWeatherData.current_units.temperature_2m
             const strHumidityUnit = objWeatherData.current_units.relative_humidity_2m
-            const boolIsDay = objCurrent.is_day
-            const fltCurrTemp = objCurrent.temperature_2m
-            const intCurrHumidity = objCurrent.relative_humidity_2m
-            const intCurrWeatherCode = objCurrent.weather_code
-            const fltDailyTempMax = objDaily.temperature_2m_max[0]
-            const fltDailyTempMin = objDaily.temperature_2m_min[0]
+            const blnIsDay = objWeatherData.current.is_day
+            const fltCurrTemp = objWeatherData.current.temperature_2m
+            const intCurrHumidity = objWeatherData.current.relative_humidity_2m
+            const intCurrWeatherCode = objWeatherData.current.weather_code
+            const fltDailyTempMax = objWeatherData.daily.temperature_2m_max
+            const fltDailyTempMin = objWeatherData.daily.temperature_2m_min
 
             // get specific icons based on data
-            const objConditions = getConditionAndIcon(intCurrWeatherCode, boolIsDay)
-            const strTempIcon = getTempIcon(fltCurrTemp)
+            const objConditions = getConditionAndIcon(intCurrWeatherCode, blnIsDay)
+            const objTempIcon = getTempIcon(fltCurrTemp)
 
             // change bg colors based on day/night
-            if (boolIsDay) {
+            if (blnIsDay) {
                 document.querySelector('body').className = "bg-day"
             } else {
                 document.querySelector('body').className = "bg-night"
@@ -184,42 +177,51 @@
 
             // input all data into the html
             document.querySelector('#txtLocation').innerHTML = strCity + ", " + strState
-            document.querySelector('#iconTemp').className = strTempIcon
+            document.querySelector('#iconTemp').className = objTempIcon.icon
+            document.querySelector('#iconTemp').setAttribute('aria-label', objTempIcon.ariaLabel)
             document.querySelector('#txtTemp').innerHTML = fltCurrTemp + strTempUnit
             document.querySelector('#iconCondition').className = objConditions.icon
+            document.querySelector('#iconCondition').setAttribute('aria-label', objConditions.ariaLabel)
             document.querySelector('#txtCondition').innerHTML = objConditions.condition
             document.querySelector('#txtHighTemp').innerHTML += 'High: ' + fltDailyTempMax + strTempUnit
             document.querySelector('#txtLowTemp').innerHTML += 'Low: ' + fltDailyTempMin + strTempUnit
             document.querySelector('#txtHumidityHeader').innerHTML = 'Humidity'
             document.querySelector('#txtHumidity').innerHTML += intCurrHumidity + strHumidityUnit
 
+            // call function to render chart with data for the day
             renderChart(objHourly)
         }
 
+        // function to render chart using ApexCharts.js
         function renderChart(objData) {
-            const chartData = {
+            // data for each chart type option
+            const objChartData = {
                 temperature: {
                     name: 'Temperature',
-                    data: objData.temperature_2m
+                    data: objData.temperature_2m,
+                    yaxisSuffix: '°'
                 },
                 humidity: {
                     name: 'Humidity',
-                    data: objData.relative_humidity_2m
+                    data: objData.relative_humidity_2m,
+                    yaxisSuffix: '%'
                 },
                 precipitation: {
                     name: 'Precipitation',
-                    data: objData.precipitation_probability
+                    data: objData.precipitation_probability,
+                    yaxisSuffix: '%'
                 },
                 wind: {
                     name: 'Wind',
-                    data: objData.wind_speed_10m
+                    data: objData.wind_speed_10m,
+                    yaxisSuffix: "mph"
                 }
             }
 
             const options = {
                 series: [{
-                    name: chartData.temperature.name,
-                    data: chartData.temperature.data
+                    name: objChartData.temperature.name,
+                    data: objChartData.temperature.data
                 }],
                 chart: {
                     height: 250,
@@ -241,13 +243,26 @@
                 },
                 xaxis: {
                     type: 'datetime',
-                    categories: objData.time
-                },
-                tooltip: {
-                    x: {
-                        format: 'dd HH:mm'
+                    categories: objData.time,
+                    labels: {
+                        // 12-hour format with AM/PM suffix
+                        formatter: function (value) {
+                            const date = new Date(value)
+                            let intHours = date.getHours()
+                            let strSuffix = intHours >= 12 ? 'PM' : 'AM'
+                            intHours = intHours % 12 || 12
+                            return `${intHours} ${strSuffix}`
+                        }
                     },
+                    tickAmount: 4
                 },
+                yaxis: {
+                    labels: {
+                        formatter: function (value) {
+                            return value + '°'
+                        }
+                    }
+                }
             }
 
             const chart = new ApexCharts(document.querySelector("#chart"), options)
@@ -255,16 +270,26 @@
 
             // listen for change in selection and update chart accordingly
             document.querySelector('#selChartType').addEventListener('change', function (event) {
-                let strType = event.target.value
-                chart.updateSeries([{
-                    name: chartData[strType].name,
-                    data: chartData[strType].data
-                }])
+                const strType = event.target.value
+                chart.updateOptions({
+                    series: [{
+                        name: objChartData[strType].name,
+                        data: objChartData[strType].data
+                    }],
+                    yaxis: {
+                        labels: {
+                            formatter: function (value) {
+                                return value + objChartData[strType].yaxisSuffix
+                            }
+                        }
+                    }
+                })
             })
         }
 
-        async function getData(strApiUrl) {
-            const objResponse = await fetch(strApiUrl, {
+        // function to get data from a url
+        async function getData(strUrl) {
+            const objResponse = await fetch(strUrl, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -279,160 +304,202 @@
             return objData
         }
 
-        function getTempIcon(temp) {
-            let icon = ""
-            if (temp > 80) {
-                icon = "bi bi-thermometer"
-            } else if (temp > 60) {
-                icon = "bi bi-thermometer-half"
-            } else if (temp > 30) {
-                icon = "bi bi-thermometer-low"
+        // function that returns an object for a bootstrap icon and aria-label
+        //      based on temperature
+        function getTempIcon(fltTemp) {
+            let strIcon = ""
+            let strAriaLabel = ""
+            if (fltTemp > 80) {
+                strIcon = "bi bi-thermometer-high"
+                strAriaLabel = "High thermometer icon"
+            } else if (fltTemp > 60) {
+                strIcon = "bi bi-thermometer-half"
+                strAriaLabel = "Half thermometer icon"
+            } else if (fltTemp > 30) {
+                strIcon = "bi bi-thermometer-low"
+                strAriaLabel = "Low thermometer icon"
             } else {
-                icon = "bi bi-thermometer"
+                strIcon = "bi bi-thermometer"
+                strAriaLabel = "Very low thermometer icon"
             }
 
-            return icon
+            return {"icon": strIcon, "ariaLabel": strAriaLabel}
         }
 
-        function getConditionAndIcon(weatherCode, isDay) {
-            let condition = ""
-            let icon = ""
-            switch (weatherCode) {
+        // function that returns an object for the weather condition, bootstrap icon,
+        //      and aria-label based on weather code and day/night
+        function getConditionAndIcon(intWeatherCode, blnIsDay) {
+            let strCondition = ""
+            let strIcon = ""
+            let strAriaLabel = ""
+            switch (intWeatherCode) {
                 case 0:
-                    if (isDay) {
-                        condition = "Sunny"
-                        icon = "bi bi-sun"
+                    if (blnIsDay) {
+                        strCondition = "Sunny"
+                        strIcon = "bi bi-sun"
+                        strAriaLabel = "Sun icon"
                     } else {
-                        condition = "Clear"
-                        icon = "bi bi-moon-stars"
+                        strCondition = "Clear"
+                        strIcon = "bi bi-moon-stars"
+                        strAriaLabel = "Moon icon"
                     }
                     break
                 case 1:
-                    if (isDay) {
-                        condition = "Mostly Sunny"
-                        icon = "bi bi-sun"
+                    if (blnIsDay) {
+                        strCondition = "Mostly Sunny"
+                        strIcon = "bi bi-sun"
+                        strAriaLabel = "Sun icon"
                     } else {
-                        condition = "Mostly Clear"
-                        icon = "bi bi-moon"
+                        strCondition = "Mostly Clear"
+                        strIcon = "bi bi-moon"
+                        strAriaLabel = "Moon icon"
                     }
                     break
                 case 2:
-                    if (isDay) {
-                        condition = "Partly Cloudy"
-                        icon = "bi bi-cloud-sun"
+                    if (blnIsDay) {
+                        strCondition = "Partly Cloudy"
+                        strIcon = "bi bi-cloud-sun"
+                        strAriaLabel = "Clouded sun icon"
                     } else {
-                        condition = "Partly Cloudy"
-                        icon = "bi bi-cloud-moon"
+                        strCondition = "Partly Cloudy"
+                        strIcon = "bi bi-cloud-moon"
+                        strAriaLabel = "Clouded moon icon"
                     }
                     break
                 case 3:
-                    condition = "Overcast"
-                    icon = "bi bi-cloudy"
+                    strCondition = "Overcast"
+                    strIcon = "bi bi-cloudy"
+                    strAriaLabel = "Cloud icon"
                     break
                 case 45:
-                    condition = "Fog"
-                    icon = "bi bi-cloud-fog2"
+                    strCondition = "Fog"
+                    strIcon = "bi bi-cloud-fog2"
+                    strAriaLabel = "Fog cloud icon"
                     break
                 case 48:
-                    condition = "Rime Fog"
-                    icon = "bi bi-cloud-fog2"
+                    strCondition = "Rime Fog"
+                    strIcon = "bi bi-cloud-fog2"
+                    strAriaLabel = "Fog cloud icon"
                     break
                 case 51:
-                    condition = "Light Drizzle"
-                    icon = "bi bi-cloud-drizzle"
+                    strCondition = "Light Drizzle"
+                    strIcon = "bi bi-cloud-drizzle"
+                    strAriaLabel = "Drizzle cloud icon"
                     break
                 case 53:
-                    condition = "Drizzle"
-                    icon = "bi bi-cloud-drizzle"
+                    strCondition = "Drizzle"
+                    strIcon = "bi bi-cloud-drizzle"
+                    strAriaLabel = "Drizzle cloud icon"
                     break
                 case 55:
-                    condition = "Heavy Drizzle"
-                    icon = "bi bi-cloud-drizzle"
+                    strCondition = "Heavy Drizzle"
+                    strIcon = "bi bi-cloud-drizzle"
+                    strAriaLabel = "Drizzle cloud icon"
                     break
                 case 56:
-                    condition = "Light Freezing Drizzle"
-                    icon = "bi bi-cloud-drizzle"
+                    strCondition = "Light Freezing Drizzle"
+                    strIcon = "bi bi-cloud-drizzle"
+                    strAriaLabel = "Drizzle cloud icon"
                     break
                 case 57:
-                    condition = "Heavy Freezing Drizzle"
-                    icon = "bi bi-cloud-drizzle"
+                    strCondition = "Heavy Freezing Drizzle"
+                    strIcon = "bi bi-cloud-drizzle"
+                    strAriaLabel = "Drizzle cloud icon"
                     break
                 case 61:
-                    condition = "Light Rain"
-                    icon = "bi bi-cloud-rain"
+                    strCondition = "Light Rain"
+                    strIcon = "bi bi-cloud-rain"
+                    strAriaLabel = "Rain cloud icon"
                     break
                 case 63:
-                    condition = "Rain"
-                    icon = "bi bi-cloud-rain"
+                    strCondition = "Rain"
+                    strIcon = "bi bi-cloud-rain"
+                    strAriaLabel = "Rain cloud icon"
                     break
                 case 65:
-                    condition = "Heavy Rain"
-                    icon = "bi bi-cloud-rain-heavy"
+                    strCondition = "Heavy Rain"
+                    strIcon = "bi bi-cloud-rain-heavy"
+                    strAriaLabel = "Heavy rain cloud icon"
                     break
                 case 66:
-                    condition = "Light Freezing Rain"
-                    icon = "bi bi-cloud-sleet"
+                    strCondition = "Light Freezing Rain"
+                    strIcon = "bi bi-cloud-sleet"
+                    strAriaLabel = "Sleet cloud icon"
                     break
                 case 67:
-                    condition = "Heavy Freezing Rain"
-                    icon = "bi bi-cloud-sleet"
+                    strCondition = "Heavy Freezing Rain"
+                    strIcon = "bi bi-cloud-sleet"
+                    strAriaLabel = "Sleet cloud icon"
                     break
                 case 71:
-                    condition = "Light Snowfall"
-                    icon = "bi bi-cloud-snow"
+                    strCondition = "Light Snowfall"
+                    strIcon = "bi bi-cloud-snow"
+                    strAriaLabel = "Snow cloud icon"
                     break
                 case 73:
-                    condition = "Snow"
-                    icon = "bi bi-cloud-snow"
+                    strCondition = "Snow"
+                    strIcon = "bi bi-cloud-snow"
+                    strAriaLabel = "Snow cloud icon"
                     break
                 case 75:
-                    condition = "Heavy Snow"
-                    icon = "bi bi-cloud-snow"
+                    strCondition = "Heavy Snow"
+                    strIcon = "bi bi-cloud-snow"
+                    strAriaLabel = "Snow cloud icon"
                     break
                 case 77:
-                    condition = "Snow Grains"
-                    icon = "bi bi-cloud-snow"
+                    strCondition = "Snow Grains"
+                    strIcon = "bi bi-cloud-snow"
+                    strAriaLabel = "Snow cloud icon"
                     break
                 case 80:
-                    condition = "Light Rain Shower"
-                    icon = "bi bi-cloud-rain"
+                    strCondition = "Light Rain Shower"
+                    strIcon = "bi bi-cloud-rain"
+                    strAriaLabel = "Rain cloud icon"
                     break
                 case 81:
-                    condition = "Rain Shower"
-                    icon = "bi bi-cloud-rain"
+                    strCondition = "Rain Shower"
+                    strIcon = "bi bi-cloud-rain"
+                    strAriaLabel = "Rain cloud icon"
                     break
                 case 82:
-                    condition = "Heavy Rain Shower"
-                    icon = "bi bi-cloud-rain-heavy"
+                    strCondition = "Heavy Rain Shower"
+                    strIcon = "bi bi-cloud-rain-heavy"
+                    strAriaLabel = "Heavy rain cloud icon"
                     break
                 case 85:
-                    condition = "Light Snow Shower"
-                    icon = "bi bi-cloud-snow"
+                    strCondition = "Light Snow Shower"
+                    strIcon = "bi bi-cloud-snow"
+                    strAriaLabel = "Snow cloud icon"
                     break
                 case 86:
-                    condition = "Heavy Snow Shower"
-                    icon = "bi bi-cloud-snow"
+                    strCondition = "Heavy Snow Shower"
+                    strIcon = "bi bi-cloud-snow"
+                    strAriaLabel = "Snow cloud icon"
                     break
                 case 95:
-                    condition = "Thunderstorm"
-                    icon = "bi bi-cloud-lightning-rain"
+                    strCondition = "Thunderstorm"
+                    strIcon = "bi bi-cloud-lightning-rain"
+                    strAriaLabel = "Lightning cloud icon"
                     break
                 case 96:
-                    condition = "Light Hail Thunderstorm"
-                    icon = "bi bi-cloud-lightning-rain"
+                    strCondition = "Light Hail Thunderstorm"
+                    strIcon = "bi bi-cloud-lightning-rain"
+                    strAriaLabel = "Lightning cloud icon"
                     break
                 case 99:
-                    condition = "Heavy Hail Thunderstorm"
-                    icon = "bi bi-cloud-lightning-rain"
+                    strCondition = "Heavy Hail Thunderstorm"
+                    strIcon = "bi bi-cloud-lightning-rain"
+                    strAriaLabel = "Lightning cloud icon"
                     break
                 default:
-                    condition = "Unknown"
+                    strCondition = "Unknown"
             }
-            return {"condition": condition, "icon": icon}
+            return {"condition": strCondition, "icon": strIcon, "ariaLabel": strAriaLabel}
         }
 
-        function getStateAbbr(state) {
-            const stateMapping = {
+        // function that returns the specified state's abbreviation
+        function getStateAbbr(strState) {
+            const objStateMapping = {
                 "Alabama": "AL",
                 "Alaska": "AK",
                 "Arizona": "AZ",
@@ -486,7 +553,7 @@
                 "Wyoming": "WY"
             };
 
-            return stateMapping[state]
+            return objStateMapping[strState]
         }
     </script>
 </body>

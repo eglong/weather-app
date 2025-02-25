@@ -4,6 +4,8 @@
     "start_url": "/weather-app",
     "id": "/weather-app",
     "display": "standalone",
+    "background_color": "#B2DFFB",
+    "theme_color": "#B2DFFB",
     "icons": [
         {
             "src": "images/48.png",
