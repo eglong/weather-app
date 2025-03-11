@@ -22,9 +22,13 @@ if (navigator.geolocation) {
 
 // function that populates data into the html
 async function populateHTML(fltLatitude, fltLongitude) {
-    // call function to get data from api
+    // weather data provided by Open-Meteo (https://open-meteo.com/)
     let strWeatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${fltLatitude}&longitude=${fltLongitude}&current=temperature_2m,relative_humidity_2m,is_day,precipitation,weather_code&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=1`
+
+    // location data provided by OpenStreetMap (ODbL licensed)
+    // API request to Nominatim for reverse geocoding
     let strGeocodingApiUrl = `https://nominatim.openstreetmap.org/reverse.php?lat=${fltLatitude}&lon=${fltLongitude}&zoom=10&format=json`
+
     const objWeatherData = await getData(strWeatherApiUrl)
     const objGeocodeData = await getData(strGeocodingApiUrl)
 
