@@ -4,7 +4,7 @@ if (navigator.geolocation) {
         // call function to populate app with data
         populateHTML(location.coords.latitude, location.coords.longitude)
     }, function (error) {
-        strError = ''
+        let strError = ''
 
         // alert user to enable location sharing if denied or other error
         if (error.code === error.PERMISSION_DENIED) {
